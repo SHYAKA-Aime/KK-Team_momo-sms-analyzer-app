@@ -12,7 +12,7 @@ Enterprise-level fullstack application for processing MoMo SMS data in XML forma
 - Aime SHYAKA - [SHYAKA-Aime]
 - Golbert Gautier Kamanzi - [kamanzi2025]
 - Jotham Rutijana Jabo - [Rutijana]
-- Rwema Christian Gashumba - [GitHub Username]
+- Rwema Christian Gashumba - [Rwema707]
 
 ## Project Overview
 
@@ -20,8 +20,8 @@ This application processes MoMo (Mobile Money) SMS transaction data through an E
 
 ## System Architecture
 
-[Link to Architecture Diagram]
+https://drive.google.com/file/d/13Y0TeXwpu6Z7vND-cllienmW6l3AE1NR/view?usp=sharing
 
 ## Project Management
 
-**Scrum Board:** [Link to your Scrum board]
+**Scrum Board(Trello):** https://trello.com/invite/b/68c0458a13ff991b7f3fdf62/ATTI814d0df2eba6b66f5764829b196d81835097B29D/kk-team-momo-sms-etl-project
