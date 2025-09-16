@@ -1,0 +1,426 @@
+{
+    "json_schemas": {
+        "description": "JSON representations of database entities for API responses and data serialization",
+        "user_schema": {
+            "description": "User entity JSON representation",
+            "example": {
+                "user_id": 1,
+                "phone_number": "+250788123456",
+                "full_name": "Jean Claude Uwimana",
+                "account_type": "individual",
+                "account_status": "active",
+                "registration_date": "2024-09-01T08:30:00Z",
+                "created_at": "2024-09-01T08:30:00Z",
+                "updated_at": "2024-09-15T10:15:00Z",
+                "transaction_summary": {
+                    "total_sent": 75000.00,
+                    "total_received": 8000.00,
+                    "transaction_count": 5,
+                    "last_transaction": "2024-09-15T16:10:00Z"
+                }
+            },
+            "sql_mapping": {
+                "table": "users",
+                "nested_data": {
+                    "transaction_summary": "Computed from user_transaction_history and transactions tables"
+                }
+            }
+        },
+        "transaction_category_schema": {
+            "description": "Transaction category entity JSON representation",
+            "example": {
+                "category_id": 1,
+                "category_name": "Mobile Money Transfer",
+                "category_type": "transfer",
+                "description": "Standard person-to-person money transfer",
+                "is_active": true,
+                "created_at": "2024-09-01T00:00:00Z",
+                "transaction_stats": {
+                    "total_transactions": 245,
+                    "total_volume": 15750000.00,
+                    "avg_amount": 64285.71
+                }
+            },
+            "sql_mapping": {
+                "table": "transaction_categories",
+                "nested_data": {
+                    "transaction_stats": "Aggregated from transactions table"
+                }
+            }
+        },
+        "transaction_schema": {
+            "description": "Core transaction entity JSON representation",
+            "example": {
+                "transaction_id": 1,
+                "external_ref_id": "TXN001234567890",
+                "amount": 25000.00,
+                "currency": "RWF",
+                "transaction_fee": 50.00,
+                "transaction_date": "2024-09-15T10:30:00Z",
+                "status": "completed",
+                "description": "Rent payment",
+                "location": "Kigali",
+                "created_at": "2024-09-15T10:30:00Z",
+                "processed_at": "2024-09-15T10:30:05Z",
+                "sender": {
+                    "user_id": 1,
+                    "phone_number": "+250788123456",
+                    "full_name": "Jean Claude Uwimana",
+                    "account_type": "individual"
+                },
+                "receiver": {
+                    "user_id": 2,
+                    "phone_number": "+250789234567",
+                    "full_name": "Marie Rose Mukamana",
+                    "account_type": "individual"
+                },
+                "category": {
+                    "category_id": 1,
+                    "category_name": "Mobile Money Transfer",
+                    "category_type": "transfer"
+                },
+                "processing_info": {
+                    "batch_id": 1,
+                    "batch_file": "momo_transactions_20240915.xml"
+                }
+            },
+            "sql_mapping": {
+                "table": "transactions",
+                "joins": [
+                    "LEFT JOIN users sender ON transactions.sender_id = sender.user_id",
+                    "LEFT JOIN users receiver ON transactions.receiver_id = receiver.user_id",
+                    "JOIN transaction_categories ON transactions.category_id = transaction_categories.category_id",
+                    "LEFT JOIN processing_batches ON transactions.batch_id = processing_batches.batch_id"
+                ]
+            }
+        },
+        "system_log_schema": {
+            "description": "System log entity JSON representation",
+            "example": {
+                "log_id": 1,
+                "log_type": "info",
+                "process_name": "xml_parser",
+                "message": "Successfully parsed XML file with 100 transactions",
+                "transaction_ref": null,
+                "created_at": "2024-09-15T09:00:00Z",
+                "user_agent": "MoMo-ETL-Pipeline/1.0",
+                "batch_info": {
+                    "batch_id": 1,
+                    "file_name": "momo_transactions_20240915.xml",
+                    "batch_status": "completed"
+                }
+            },
+            "sql_mapping": {
+                "table": "system_logs",
+                "joins": [
+                    "LEFT JOIN processing_batches ON system_logs.batch_id = processing_batches.batch_id"
+                ]
+            }
+        },
+        "processing_batch_schema": {
+            "description": "Processing batch entity JSON representation",
+            "example": {
+                "batch_id": 1,
+                "file_name": "momo_transactions_20240915.xml",
+                "file_size": 1048576,
+                "total_records": 100,
+                "processed_records": 95,
+                "failed_records": 5,
+                "batch_status": "completed",
+                "started_at": "2024-09-15T09:00:00Z",
+                "completed_at": "2024-09-15T09:05:30Z",
+                "processing_duration": "5 minutes 30 seconds",
+                "success_rate": 95.0,
+                "error_summary": [
+                    {
+                        "error_type": "invalid_phone_format",
+                        "count": 3,
+                        "description": "Phone numbers not in correct format"
+                    },
+                    {
+                        "error_type": "unknown_transaction_type",
+                        "count": 2,
+                        "description": "Transaction type not recognized by categorizer"
+                    }
+                ]
+            },
+            "sql_mapping": {
+                "table": "processing_batches",
+                "computed_fields": {
+                    "processing_duration": "Calculated from started_at and completed_at",
+                    "success_rate": "Calculated as (processed_records / total_records) * 100",
+                    "error_summary": "Aggregated from system_logs table by batch_id"
+                }
+            }
+        }
+    },
+    "dashboard_json_example": {
+        "description": "Complete JSON structure for dashboard analytics - represents aggregated data from multiple tables",
+        "structure": {
+            "metadata": {
+                "generated_at": "2024-09-15T18:00:00Z",
+                "data_range": {
+                    "start_date": "2024-09-01T00:00:00Z",
+                    "end_date": "2024-09-15T23:59:59Z"
+                },
+                "total_transactions": 1547,
+                "total_volume": 125750000.00,
+                "currency": "RWF"
+            },
+            "transaction_trends": {
+                "daily_stats": [
+                    {
+                        "date": "2024-09-15",
+                        "transaction_count": 156,
+                        "total_volume": 8500000.00,
+                        "avg_amount": 54487.18,
+                        "total_fees": 15600.00
+                    },
+                    {
+                        "date": "2024-09-14",
+                        "transaction_count": 142,
+                        "total_volume": 7200000.00,
+                        "avg_amount": 50704.23,
+                        "total_fees": 14200.00
+                    }
+                ],
+                "hourly_distribution": [
+                    {
+                        "hour": 0,
+                        "count": 12,
+                        "volume": 450000.00
+                    },
+                    {
+                        "hour": 1,
+                        "count": 8,
+                        "volume": 280000.00
+                    },
+                    {
+                        "hour": 9,
+                        "count": 45,
+                        "volume": 2100000.00
+                    },
+                    {
+                        "hour": 12,
+                        "count": 67,
+                        "volume": 3200000.00
+                    },
+                    {
+                        "hour": 18,
+                        "count": 89,
+                        "volume": 4500000.00
+                    }
+                ]
+            },
+            "category_analysis": {
+                "by_volume": [
+                    {
+                        "category_name": "Mobile Money Transfer",
+                        "category_type": "transfer",
+                        "transaction_count": 745,
+                        "total_volume": 65200000.00,
+                        "percentage_of_total": 51.85,
+                        "avg_amount": 87516.11
+                    },
+                    {
+                        "category_name": "Agent Cash Out",
+                        "category_type": "withdrawal",
+                        "transaction_count": 398,
+                        "total_volume": 35800000.00,
+                        "percentage_of_total": 28.47,
+                        "avg_amount": 89949.75
+                    },
+                    {
+                        "category_name": "Bill Payment",
+                        "category_type": "payment",
+                        "transaction_count": 256,
+                        "total_volume": 15600000.00,
+                        "percentage_of_total": 12.40,
+                        "avg_amount": 60937.50
+                    }
+                ],
+                "by_frequency": [
+                    {
+                        "category_name": "Mobile Money Transfer",
+                        "transaction_count": 745,
+                        "percentage_of_transactions": 48.16
+                    },
+                    {
+                        "category_name": "Agent Cash Out",
+                        "transaction_count": 398,
+                        "percentage_of_transactions": 25.72
+                    }
+                ]
+            },
+            "user_analytics": {
+                "account_type_distribution": {
+                    "individual": {
+                        "count": 1245,
+                        "percentage": 85.2,
+                        "total_volume": 89500000.00
+                    },
+                    "business": {
+                        "count": 156,
+                        "percentage": 10.7,
+                        "total_volume": 28900000.00
+                    },
+                    "agent": {
+                        "count": 60,
+                        "percentage": 4.1,
+                        "total_volume": 7350000.00
+                    }
+                },
+                "top_users_by_volume": [
+                    {
+                        "user_id": 15,
+                        "phone_number": "+250788***456",
+                        "account_type": "business",
+                        "total_sent": 2500000.00,
+                        "total_received": 1800000.00,
+                        "transaction_count": 45
+                    },
+                    {
+                        "user_id": 7,
+                        "phone_number": "+250722***789",
+                        "account_type": "individual",
+                        "total_sent": 1950000.00,
+                        "total_received": 650000.00,
+                        "transaction_count": 67
+                    }
+                ]
+            },
+            "system_health": {
+                "processing_stats": {
+                    "total_files_processed": 15,
+                    "total_records_processed": 1547,
+                    "failed_records": 23,
+                    "success_rate": 98.51,
+                    "avg_processing_time": "4 minutes 23 seconds"
+                },
+                "recent_errors": [
+                    {
+                        "error_type": "warning",
+                        "count": 12,
+                        "description": "Invalid phone number format detected"
+                    },
+                    {
+                        "error_type": "error",
+                        "count": 5,
+                        "description": "Unknown transaction type encountered"
+                    }
+                ],
+                "last_processed_batch": {
+                    "batch_id": 15,
+                    "file_name": "momo_transactions_20240915_evening.xml",
+                    "processed_at": "2024-09-15T17:30:00Z",
+                    "status": "completed"
+                }
+            },
+            "geographic_insights": {
+                "top_locations": [
+                    {
+                        "location": "Kigali",
+                        "transaction_count": 987,
+                        "total_volume": 78500000.00,
+                        "percentage": 62.4
+                    },
+                    {
+                        "location": "Gasabo",
+                        "transaction_count": 234,
+                        "total_volume": 18900000.00,
+                        "percentage": 15.0
+                    },
+                    {
+                        "location": "Kimisagara",
+                        "transaction_count": 156,
+                        "total_volume": 12300000.00,
+                        "percentage": 9.8
+                    }
+                ]
+            }
+        },
+        "sql_queries_used": {
+            "transaction_trends": "SELECT DATE(transaction_date) as date, COUNT(*) as transaction_count, SUM(amount) as total_volume FROM transactions WHERE status = 'completed' GROUP BY DATE(transaction_date)",
+            "category_analysis": "SELECT tc.category_name, tc.category_type, COUNT(t.transaction_id) as transaction_count, SUM(t.amount) as total_volume FROM transactions t JOIN transaction_categories tc ON t.category_id = tc.category_id WHERE t.status = 'completed' GROUP BY tc.category_id",
+            "user_analytics": "SELECT u.account_type, COUNT(*) as count, SUM(CASE WHEN uth.role_type = 'sender' THEN t.amount ELSE 0 END) as total_volume FROM users u JOIN user_transaction_history uth ON u.user_id = uth.user_id JOIN transactions t ON uth.transaction_id = t.transaction_id WHERE t.status = 'completed' GROUP BY u.account_type",
+            "geographic_insights": "SELECT location, COUNT(*) as transaction_count, SUM(amount) as total_volume FROM transactions WHERE status = 'completed' AND location IS NOT NULL GROUP BY location ORDER BY total_volume DESC"
+        }
+    },
+    "api_response_examples": {
+        "description": "Example API responses using the JSON schemas",
+        "get_transactions_response": {
+            "status": "success",
+            "data": {
+                "transactions": [
+                    {
+                        "transaction_id": 1,
+                        "external_ref_id": "TXN001234567890",
+                        "amount": 25000.00,
+                        "currency": "RWF",
+                        "transaction_fee": 50.00,
+                        "transaction_date": "2024-09-15T10:30:00Z",
+                        "status": "completed",
+                        "sender": {
+                            "phone_number": "+250788***456",
+                            "full_name": "Jean Claude U."
+                        },
+                        "receiver": {
+                            "phone_number": "+250789***567",
+                            "full_name": "Marie Rose M."
+                        },
+                        "category": {
+                            "category_name": "Mobile Money Transfer",
+                            "category_type": "transfer"
+                        }
+                    }
+                ],
+                "pagination": {
+                    "current_page": 1,
+                    "per_page": 50,
+                    "total_pages": 31,
+                    "total_records": 1547
+                }
+            },
+            "metadata": {
+                "query_time": "0.045s",
+                "generated_at": "2024-09-15T18:00:00Z"
+            }
+        },
+        "get_analytics_response": {
+            "status": "success",
+            "data": {
+                "summary": {
+                    "total_transactions": 1547,
+                    "total_volume": 125750000.00,
+                    "avg_transaction_value": 81285.71,
+                    "success_rate": 98.51
+                },
+                "trends": {
+                    "daily_growth": 12.5,
+                    "volume_growth": 8.3,
+                    "popular_category": "Mobile Money Transfer"
+                }
+            },
+            "metadata": {
+                "period": "last_30_days",
+                "generated_at": "2024-09-15T18:00:00Z"
+            }
+        },
+        "error_response_example": {
+            "status": "error",
+            "error": {
+                "code": "INVALID_PHONE_FORMAT",
+                "message": "Phone number format is invalid. Expected format: +250XXXXXXXXX",
+                "details": {
+                    "field": "phone_number",
+                    "provided_value": "0788123456",
+                    "expected_format": "+250788123456"
+                }
+            },
+            "metadata": {
+                "timestamp": "2024-09-15T18:00:00Z",
+                "request_id": "req_abc123def456"
+            }
+        }
+    }
+}
