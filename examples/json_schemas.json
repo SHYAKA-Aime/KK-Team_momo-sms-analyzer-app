@@ -1,7 +1,6 @@
 {
     "json_schemas": {
       "description": "JSON representations",
-      
       "user_schema": {
         "description": "User entity",
         "example": {
