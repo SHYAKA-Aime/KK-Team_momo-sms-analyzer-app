@@ -66,7 +66,7 @@ The server will start on `http://localhost:8000`
 
 ### Authentication Credentials
 
-- **Username:** `admin`
+- **Username:** `kkteam`
 - **Password:** `password123`
 
 ## Testing the API
